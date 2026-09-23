@@ -1,37 +1,288 @@
 <!doctype html>
 <html lang="uz">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kitob</title><link rel="stylesheet" href="/style.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Interaktiv kitob</title>
+<link rel="stylesheet" href="/style.css">
+<style>
+  .book-reader{position:relative;min-height:calc(100vh - 64px);overflow:hidden;background:#6f4727 url('/book-bg.svg') center/cover fixed no-repeat;}
+  .book-reader::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at center,rgba(255,255,255,.18),transparent 44%),linear-gradient(180deg,rgba(18,10,6,.24),rgba(18,10,6,.08) 30%,rgba(0,0,0,.22));pointer-events:none}
+  .reader-inner{position:relative;z-index:1;min-height:calc(100vh - 64px);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:18px 18px 22px;}
+  .book-toolbar{width:min(1320px,96vw);display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;color:#fff;text-shadow:0 2px 5px rgba(0,0,0,.45)}
+  .book-title{font-weight:800;letter-spacing:.02em}
+  .book-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+  .book-btn{border:1px solid rgba(255,255,255,.26);background:rgba(24,16,10,.38);color:#fff;padding:9px 12px;border-radius:10px;text-decoration:none;cursor:pointer;backdrop-filter:blur(8px)}
+  .book-btn:hover{background:rgba(24,16,10,.55)}
+  .book-stage{width:min(1240px,94vw);height:min(76vh,calc(94vw / 1.5 * .93));aspect-ratio:1.5;perspective:2400px;position:relative;filter:drop-shadow(0 28px 38px rgba(0,0,0,.35));}
+  .book{position:absolute;inset:0;transform-style:preserve-3d}
+  .spread{position:absolute;inset:0;display:grid;grid-template-columns:1fr 1fr;border-radius:6px;overflow:hidden;background:#f5f0e6;box-shadow:inset 0 0 0 1px rgba(0,0,0,.16),0 0 0 3px rgba(45,25,12,.16)}
+  .page{position:relative;background:#fffdf8;overflow:hidden;backface-visibility:hidden;box-shadow:inset 10px 0 26px rgba(0,0,0,.08),inset -8px 0 18px rgba(0,0,0,.03)}
+  .page.left{border-right:1px solid rgba(0,0,0,.16);box-shadow:inset -20px 0 32px rgba(0,0,0,.14),inset 8px 0 14px rgba(0,0,0,.03)}
+  .page.right{border-left:1px solid rgba(0,0,0,.16);box-shadow:inset 20px 0 32px rgba(0,0,0,.13),inset -8px 0 14px rgba(0,0,0,.03)}
+  .page canvas{width:100%;height:100%;display:block;object-fit:contain;background:#fff}
+  .page.placeholder{background:linear-gradient(180deg,#fffdf7,#f3ebdd);}
+  .page.placeholder::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 48%,rgba(95,61,37,.09) 50%,transparent 52%);pointer-events:none}
+  .spine{position:absolute;left:50%;top:0;bottom:0;width:24px;transform:translateX(-50%);background:linear-gradient(90deg,rgba(0,0,0,.24),rgba(255,255,255,.24),rgba(0,0,0,.24));mix-blend-mode:multiply;z-index:4;pointer-events:none;opacity:.65}
+  .turn-page{position:absolute;top:0;bottom:0;width:50%;z-index:8;transform-style:preserve-3d;display:none;}
+  .turn-page.forward{left:50%;transform-origin:left center;}
+  .turn-page.backward{left:0;transform-origin:right center;}
+  .turn-page .face{position:absolute;inset:0;backface-visibility:hidden;overflow:hidden;background:#fffdf8;box-shadow:inset 10px 0 30px rgba(0,0,0,.08),inset -8px 0 18px rgba(0,0,0,.04)}
+  .turn-page .face.back{transform:rotateY(180deg);}
+  .turn-page .face canvas{width:100%;height:100%;display:block;object-fit:contain;background:#fff}
+  .turn-shadow{position:absolute;top:0;bottom:0;width:50%;z-index:7;pointer-events:none;opacity:0;transition:opacity .15s;}
+  .turn-shadow.forward{left:50%;background:linear-gradient(90deg,rgba(0,0,0,.30),transparent 22%,transparent 75%,rgba(0,0,0,.16));transform-origin:left center}
+  .turn-shadow.backward{left:0;background:linear-gradient(90deg,rgba(0,0,0,.16),transparent 25%,transparent 78%,rgba(0,0,0,.28));transform-origin:right center}
+  .cover-card{display:grid;place-items:center;text-align:center;padding:8%;height:100%;background:linear-gradient(140deg,#231a14,#8d5d38 50%,#2e2117);color:#f6ead8}
+  .cover-card .cover-inner{width:76%;height:88%;display:flex;flex-direction:column;justify-content:space-between;align-items:center;border:1px solid rgba(255,245,226,.35);padding:10% 8%;box-shadow:inset 0 0 35px rgba(255,215,160,.08),0 18px 40px rgba(0,0,0,.25)}
+  .cover-kicker{font-size:clamp(10px,1.2vw,15px);letter-spacing:.36em;text-transform:uppercase;opacity:.8}
+  .cover-card h1{font-size:clamp(32px,4.8vw,72px);margin:0;line-height:.95}
+  .cover-sub{font-size:clamp(12px,1.4vw,18px);opacity:.78}
+  .page-corner{position:absolute;bottom:0;width:92px;height:92px;pointer-events:none;opacity:.65}
+  .page-corner.right{right:0;background:linear-gradient(135deg,transparent 0 47%,rgba(0,0,0,.14) 48%,#fff 53%)}
+  .page-corner.left{left:0;background:linear-gradient(225deg,transparent 0 47%,rgba(0,0,0,.14) 48%,#fff 53%)}
+  .reader-controls{width:min(760px,94vw);display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;}
+  .reader-controls .control{background:rgba(22,14,9,.48);border-color:rgba(255,255,255,.22);color:#fff;box-shadow:0 8px 18px rgba(0,0,0,.18)}
+  .counter{color:#fff;min-width:120px;text-shadow:0 2px 5px rgba(0,0,0,.48);font-weight:700;text-align:center}
+  .help-book{color:rgba(255,255,255,.82);text-align:center;font-size:12px;margin-top:10px;text-shadow:0 2px 5px rgba(0,0,0,.48)}
+  .loading{position:absolute;inset:0;display:grid;place-items:center;color:#6b4a2f;background:linear-gradient(#fffdf7,#f3ead9);font-weight:700}
+  @media(max-width:900px){.book-stage{height:min(72vh,calc(94vw / 1.5));}.book-toolbar{align-items:flex-start;gap:8px}.book-actions{justify-content:flex-end}.book-title{font-size:14px}.book-btn{font-size:12px;padding:8px 10px}}
+  @media(max-width:680px){.topbar{height:58px}.reader-inner{min-height:calc(100vh - 58px);padding:10px 8px 12px}.book-toolbar{width:98vw;margin-bottom:8px}.book-stage{width:98vw;height:calc(98vw / 1.5);max-height:64vh}.reader-controls{margin-top:8px}.reader-controls .control{padding:9px 10px}.help-book{font-size:11px;max-width:94vw}.book-btn:nth-child(3){display:none}}
+</style>
 </head>
 <body class="viewer-page">
-<header class="topbar"><a href="/">← Bosh sahifa</a><nav class="nav"><a class="btn" href="/slayd">Slayd</a><a class="btn" href="/site">Site PDF</a><a class="btn" href="/kitob.pdf" target="_blank">↗ PDF</a></nav></header>
-<div class="book-wrap">
-  <div>
-    <div class="book-stage">
-      <div id="book" class="book">
-        <div id="paper" class="paper cover"><div><div style="font-size:14px;opacity:.7;letter-spacing:.2em">SESSION BOOK</div><h2>Kitob</h2><div style="margin-top:18px;opacity:.7">Boshingiz bilan yoki tugma orqali varaqlang</div></div></div>
+<header class="topbar">
+  <a href="/">← Bosh sahifa</a>
+  <nav class="nav"><a class="btn" href="/slayd">Slayd</a><a class="btn" href="/site">Site PDF</a><a class="btn" href="/kitob.pdf" target="_blank">↗ PDF</a></nav>
+</header>
+<main class="book-reader">
+  <div class="reader-inner">
+    <div class="book-toolbar">
+      <div class="book-title">📖 Interaktiv kitob</div>
+      <div class="book-actions">
+        <button class="book-btn" id="soundBtn" type="button">🔊 Ovoz</button>
+        <button class="book-btn" id="fitBtn" type="button">⛶ Fullscreen</button>
       </div>
     </div>
-    <div class="controls"><button class="control" id="prev">← Oldingi</button><div class="counter" id="counter">1 / 1</div><button class="control" id="next">Keyingi →</button></div>
-    <div class="help">Sahifaning o‘ng tomonini bossangiz keyingi sahifa ochiladi. Chap tomon — oldingi sahifa. Varaqlaganda “shaq” ovozi chiqadi.</div>
+    <div class="book-stage" id="stage">
+      <div class="book" id="book">
+        <div class="spread" id="spread">
+          <div class="page left placeholder" id="leftPage"><div class="loading" id="leftLoading">Kitob tayyorlanmoqda…</div></div>
+          <div class="page right" id="rightPage"><div class="loading" id="rightLoading">Kitob tayyorlanmoqda…</div></div>
+          <div class="spine"></div>
+        </div>
+        <div class="turn-shadow forward" id="shadowForward"></div>
+        <div class="turn-shadow backward" id="shadowBackward"></div>
+        <div class="turn-page forward" id="turnForward">
+          <div class="face front" id="turnFrontForward"></div>
+          <div class="face back" id="turnBackForward"></div>
+        </div>
+        <div class="turn-page backward" id="turnBackward">
+          <div class="face front" id="turnFrontBackward"></div>
+          <div class="face back" id="turnBackBackward"></div>
+        </div>
+      </div>
+    </div>
+    <div class="reader-controls">
+      <button class="control" id="prev">← Oldingi</button>
+      <div class="counter" id="counter">1 / 1</div>
+      <button class="control" id="next">Keyingi →</button>
+    </div>
+    <div class="help-book">O‘ng sahifani bosing — oldinga. Chap sahifani bosing — orqaga. Sahifa yumshoq 3D effekt bilan o‘girilib, “shaq” ovozi chiqadi.</div>
   </div>
-</div>
+</main>
 <script type="module">
 import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
-pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
-const paper=document.getElementById('paper'), counter=document.getElementById('counter');
-const prev=document.getElementById('prev'), next=document.getElementById('next');
-let pdf=null,current=1,total=1,busy=false;
-function flipSound(){const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C(),o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.setValueAtTime(1500,c.currentTime);o.frequency.exponentialRampToValueAtTime(420,c.currentTime+.08);g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.08,c.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.1);o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+.11)}
-async function drawPage(n){
-  if(!pdf)return;
-  const p=await pdf.getPage(n); const vp=p.getViewport({scale:1.35});
-  const c=document.createElement('canvas'); c.width=vp.width;c.height=vp.height;c.style.width='100%';c.style.height='100%';c.style.objectFit='contain';
-  const wrap=document.createElement('div');wrap.style.width='100%';wrap.style.height='100%';wrap.style.background='#fff';wrap.style.display='grid';wrap.style.placeItems='center';wrap.appendChild(c); paper.replaceChildren(wrap); paper.classList.remove('cover'); await p.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
-  counter.textContent=`${n} / ${total}`;
+pdfjsLib.GlobalWorkerOptions.workerSrc="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+
+const leftPage=document.getElementById('leftPage');
+const rightPage=document.getElementById('rightPage');
+const counter=document.getElementById('counter');
+const prev=document.getElementById('prev');
+const next=document.getElementById('next');
+const turnForward=document.getElementById('turnForward');
+const turnBackward=document.getElementById('turnBackward');
+const shadowForward=document.getElementById('shadowForward');
+const shadowBackward=document.getElementById('shadowBackward');
+const fitBtn=document.getElementById('fitBtn');
+const soundBtn=document.getElementById('soundBtn');
+const stage=document.getElementById('stage');
+
+let pdf=null;
+let total=0;
+let state='cover';
+let leftNo=null;
+let rightNo=1;
+let busy=false;
+let soundOn=true;
+
+function clearFace(el){while(el.firstChild)el.removeChild(el.firstChild)}
+function coverNode(){
+  const div=document.createElement('div');
+  div.className='cover-card';
+  div.innerHTML='<div class="cover-inner"><div class="cover-kicker">SESSION • READING</div><h1>Kitob</h1><div class="cover-sub">Interaktiv o‘qish • 3D sahifa animatsiyasi</div></div>';
+  return div;
 }
-async function load(){try{pdf=await pdfjsLib.getDocument('/kitob.pdf').promise;total=pdf.numPages;current=1;await drawPage(1)}catch(e){counter.textContent='Kitob fayli yo‘q';}}
-async function go(delta){if(busy)return; const target=current+delta;if(target<1||target>total)return;busy=true;flipSound();paper.style.transition='transform .78s cubic-bezier(.2,.74,.15,1)';paper.style.transform=delta>0?'rotateY(-180deg)':'rotateY(0deg)';setTimeout(async()=>{current=target;await drawPage(current);paper.style.transition='none';paper.style.transform='rotateY(0deg)';requestAnimationFrame(()=>{paper.style.transition='transform .78s cubic-bezier(.2,.74,.15,1)'});busy=false},delta>0?780:50)}
-next.onclick=()=>go(1);prev.onclick=()=>go(-1);document.getElementById('book').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();go(e.clientX-r.left>r.width/2?1:-1)};window.onkeydown=e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)};
+async function pageNode(n,scale=1.45){
+  const holder=document.createElement('div');
+  holder.style.width='100%';holder.style.height='100%';holder.style.background='#fff';holder.style.position='relative';holder.style.overflow='hidden';
+  if(!n || !pdf){return holder}
+  const p=await pdf.getPage(n);
+  const raw=p.getViewport({scale:1});
+  const boxW=Math.max(300, holder.getBoundingClientRect().width||600);
+  const boxH=Math.max(300, holder.getBoundingClientRect().height||800);
+  const fit=Math.min(boxW/raw.width,boxH/raw.height)*window.devicePixelRatio*1.15;
+  const vp=p.getViewport({scale:Math.max(1.05,Math.min(2.2,fit))});
+  const canvas=document.createElement('canvas');
+  const ctx=canvas.getContext('2d',{alpha:false});
+  const ratio=window.devicePixelRatio||1;
+  canvas.width=Math.floor(vp.width*ratio);
+  canvas.height=Math.floor(vp.height*ratio);
+  canvas.style.width='100%';canvas.style.height='100%';canvas.style.objectFit='contain';canvas.style.background='#fff';
+  const renderViewport=p.getViewport({scale:vp.scale*ratio});
+  await p.render({canvasContext:ctx,viewport:renderViewport}).promise;
+  holder.appendChild(canvas);
+  return holder;
+}
+async function setPage(el,n,kind='blank'){
+  el.classList.toggle('placeholder',!n);
+  while(el.firstChild)el.removeChild(el.firstChild);
+  if(kind==='cover'){el.appendChild(coverNode());return}
+  if(!n){el.appendChild(document.createElement('div'));return}
+  el.appendChild(await pageNode(n));
+}
+function updateCounter(){
+  const visible = state==='cover' ? 'Muqova' : `${leftNo}–${rightNo}`;
+  counter.textContent=`${visible} / ${total}`;
+  prev.disabled=(state==='cover');
+  next.disabled=(state!=='cover' && rightNo>=total && leftNo>=Math.max(2,total-1));
+}
+async function renderState(){
+  if(state==='cover'){
+    await setPage(leftPage,null);
+    await setPage(rightPage,null,'cover');
+  }else{
+    await setPage(leftPage,leftNo);
+    await setPage(rightPage,rightNo);
+  }
+  updateCounter();
+}
+function makeAudio(){
+  const C=window.AudioContext||window.webkitAudioContext;
+  if(!C)return null;
+  const c=new C();
+  return ()=>{
+    if(!soundOn)return;
+    const t=c.currentTime;
+    const buffer=c.createBuffer(1,c.sampleRate*.10,c.sampleRate);
+    const data=buffer.getChannelData(0);
+    for(let i=0;i<data.length;i++){
+      const decay=1-i/data.length;
+      data[i]=(Math.random()*2-1)*decay*.23;
+    }
+    const src=c.createBufferSource();
+    const filter=c.createBiquadFilter();
+    filter.type='lowpass';filter.frequency.setValueAtTime(2400,t);
+    filter.frequency.exponentialRampToValueAtTime(900,t+.09);
+    const gain=c.createGain();gain.gain.value=.62;
+    src.buffer=buffer;src.connect(filter).connect(gain).connect(c.destination);src.start(t);
+  };
+}
+let flipSound=makeAudio();
+function resetTurn(which){
+  const el=which==='f'?turnForward:turnBackward;
+  el.style.display='none';el.style.transition='none';el.style.transform='rotateY(0deg)';
+}
+async function prepareFace(el,content){
+  clearFace(el);
+  if(content==='cover'){el.appendChild(coverNode());return}
+  const node=await pageNode(content);el.appendChild(node);
+}
+async function goForward(){
+  if(busy || !pdf) return;
+  if(state==='cover'){
+    if(total<2)return;
+    busy=true;
+    // expose the inner spread behind the cover
+    leftNo=2; rightNo=Math.min(3,total); state='cover-to-spread';
+    await setPage(leftPage,null); await setPage(rightPage,2);
+    await prepareFace(document.getElementById('turnFrontForward'),'cover');
+    await prepareFace(document.getElementById('turnBackForward'),3);
+    turnForward.style.display='block'; shadowForward.style.opacity='1';
+    flipSound?.();
+    requestAnimationFrame(()=>{turnForward.style.transition='transform 900ms cubic-bezier(.19,.82,.22,1)';turnForward.style.transform='rotateY(-180deg)'});
+    setTimeout(()=>{turnForward.style.display='none';shadowForward.style.opacity='0';state='spread';renderState();busy=false},920);
+    return;
+  }
+  if(rightNo>=total){return}
+  busy=true;
+  const oldRight=rightNo;
+  const nextNo=rightNo+1;
+  await prepareFace(document.getElementById('turnFrontForward'),oldRight);
+  await prepareFace(document.getElementById('turnBackForward'),nextNo);
+  turnForward.style.display='block';shadowForward.style.opacity='1';
+  flipSound?.();
+  requestAnimationFrame(()=>{turnForward.style.transition='transform 820ms cubic-bezier(.2,.78,.2,1)';turnForward.style.transform='rotateY(-180deg)'});
+  setTimeout(async()=>{
+    leftNo=oldRight;rightNo=nextNo;state='spread';
+    resetTurn('f');shadowForward.style.opacity='0';
+    await renderState();busy=false;
+  },840);
+}
+async function goBackward(){
+  if(busy || !pdf)return;
+  if(state==='cover')return;
+  if(leftNo===2){
+    busy=true;
+    await setPage(leftPage,null); await setPage(rightPage,2);
+    await prepareFace(document.getElementById('turnFrontBackward'),2);
+    await prepareFace(document.getElementById('turnBackBackward'),'cover');
+    turnBackward.style.display='block';shadowBackward.style.opacity='1';
+    flipSound?.();
+    requestAnimationFrame(()=>{turnBackward.style.transition='transform 900ms cubic-bezier(.19,.82,.22,1)';turnBackward.style.transform='rotateY(180deg)'});
+    setTimeout(()=>{resetTurn('b');shadowBackward.style.opacity='0';state='cover';renderState();busy=false},920);
+    return;
+  }
+  busy=true;
+  const prevNo=leftNo-1;
+  await prepareFace(document.getElementById('turnFrontBackward'),leftNo);
+  await prepareFace(document.getElementById('turnBackBackward'),prevNo);
+  turnBackward.style.display='block';shadowBackward.style.opacity='1';
+  flipSound?.();
+  requestAnimationFrame(()=>{turnBackward.style.transition='transform 820ms cubic-bezier(.2,.78,.2,1)';turnBackward.style.transform='rotateY(180deg)'});
+  setTimeout(async()=>{
+    rightNo=leftNo;leftNo=prevNo;state='spread';
+    resetTurn('b');shadowBackward.style.opacity='0';
+    await renderState();busy=false;
+  },840);
+}
+function bindBookClick(e){
+  const r=stage.getBoundingClientRect();
+  const x=e.clientX-r.left;
+  if(x < r.width/2)goBackward();else goForward();
+}
+stage.addEventListener('click',bindBookClick);
+next.addEventListener('click',goForward);prev.addEventListener('click',goBackward);
+window.addEventListener('keydown',e=>{if(e.key==='ArrowRight')goForward();if(e.key==='ArrowLeft')goBackward();});
+soundBtn.addEventListener('click',()=>{soundOn=!soundOn;soundBtn.textContent=soundOn?'🔊 Ovoz':'🔇 Ovoz';});
+fitBtn.addEventListener('click',async()=>{
+  if(!document.fullscreenElement){await stage.requestFullscreen?.()}else{await document.exitFullscreen?.()}
+});
+window.addEventListener('resize',()=>{if(pdf && !busy)renderState();});
+
+async function load(){
+  try{
+    pdf=await pdfjsLib.getDocument('/kitob.pdf').promise;
+    total=pdf.numPages;
+    state='cover';
+    await renderState();
+  }catch(err){
+    total=0;counter.textContent='kitob.pdf topilmadi';
+    await setPage(leftPage,null);
+    await setPage(rightPage,null);
+  }
+}
 load();
-</script></body></html>
+</script>
+</body>
+</html>
