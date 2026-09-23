@@ -1,17 +1,17 @@
-# Study Simple Site
+# O‘quv materiallari — statik Vercel loyiha
 
-Static Vercel/GitHub-friendly site. No npm install required.
+Loyiha `npm install` talab qilmaydi.
 
-Put these files next to the HTML files:
-
+Fayllarni shu papkaga qo‘ying:
 - `slayd.pptx`
 - `site.pdf`
 - `kitob.pdf`
 
-Routes:
-
+URLlar:
 - `/slayd`
 - `/site`
 - `/kitob`
 
-The book reader uses PageFlip for a deeper 3D page-turn animation and Web Audio paper-rustle sound. PDF pages are rendered to canvases and displayed as a realistic two-page book.
+`/kitob` PDF.js yoki npm kutubxonasiga bog‘liq emas: brauzerning o‘z PDF vieweridan foydalanadi va ustiga 3D page-turn animatsiyasini qo‘llaydi. `kitob.pdf` nomi aynan shu bo‘lishi kerak.
+
+GitHub -> Vercel import qiling. Build command shart emas.

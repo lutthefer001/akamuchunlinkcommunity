@@ -1,183 +1,151 @@
 <!doctype html>
 <html lang="uz">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Interaktiv kitob</title>
-<link rel="stylesheet" href="/style.css" />
 <style>
-  :root{--wood:#a86f3d;--paper:#fdfcf9;--ink:#161616}
-  body.book-page{overflow:hidden;background:#6f431f}
-  .book-topbar{position:fixed;inset:0 0 auto 0;height:58px;z-index:20;display:flex;align-items:center;gap:14px;padding:0 14px;background:linear-gradient(180deg,rgba(0,0,0,.92),rgba(0,0,0,.65));border-bottom:1px solid rgba(255,255,255,.09);backdrop-filter:blur(12px)}
-  .book-topbar a,.book-topbar button{font:inherit;color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.07);padding:9px 12px;border-radius:10px;cursor:pointer}
-  .book-topbar .spacer{flex:1}
-  .book-topbar .counter{font-size:13px;color:#dbe4ed;min-width:80px;text-align:center}
-  .book-stage-wrap{position:fixed;inset:58px 0 0;display:grid;place-items:center;overflow:hidden}
-  .wood{position:absolute;inset:0;background:
-    radial-gradient(1200px 700px at 20% 18%,rgba(255,245,215,.22),transparent 60%),
-    radial-gradient(800px 600px at 80% 65%,rgba(79,28,6,.18),transparent 55%),
-    repeating-linear-gradient(0deg,rgba(91,43,16,.18) 0 2px,transparent 2px 86px),
-    repeating-linear-gradient(90deg,rgba(73,35,11,.12) 0 2px,transparent 2px 120px),
-    linear-gradient(135deg,#bd8650,#8f592e 48%,#71431f);}
-  .wood:before,.wood:after{content:"";position:absolute;inset:0;pointer-events:none;opacity:.5;background:
-    radial-gradient(ellipse at 15% 86%,#31552b 0 2.8%,transparent 3%),
-    radial-gradient(ellipse at 83% 10%,#31552b 0 3.2%,transparent 3%),
-    radial-gradient(ellipse at 10% 15%,#2d4f26 0 2.5%,transparent 2.6%),
-    radial-gradient(ellipse at 93% 74%,#31552b 0 3.2%,transparent 3%);filter:blur(.4px)}
-  .wood:after{transform:scaleX(-1);opacity:.28}
-  .reader-shell{position:relative;width:min(1180px,94vw);height:min(77vh,760px);display:grid;place-items:center;filter:drop-shadow(0 35px 45px rgba(0,0,0,.35))}
-  .reader-shell:before{content:"";position:absolute;width:68%;height:8%;bottom:1%;border-radius:50%;background:rgba(0,0,0,.3);filter:blur(24px)}
-  #book-container{position:relative;width:min(980px,82vw);height:min(700px,72vh);}
-  #book{position:absolute;inset:0}
-  .page{background:#fff;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08);overflow:hidden}
-  .page canvas{display:block;width:100%;height:100%}
-  .page.--hard{background:#eee}
-  .hint{position:absolute;bottom:14px;left:50%;transform:translateX(-50%);z-index:15;color:#f3eee7;font-size:12px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.12);padding:8px 12px;border-radius:999px;backdrop-filter:blur(8px);white-space:nowrap}
-  .controls{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:30;display:flex;gap:8px}
-  .controls button{border:1px solid rgba(255,255,255,.16);background:rgba(0,0,0,.46);color:#fff;padding:10px 14px;border-radius:10px;cursor:pointer;backdrop-filter:blur(10px)}
-  .controls button:hover{background:rgba(0,0,0,.62)}
-  .loading{position:absolute;inset:0;display:grid;place-items:center;color:#fff;background:rgba(0,0,0,.18);backdrop-filter:blur(2px);z-index:10;font-size:14px}
-  @media(max-width:800px){#book-container{width:92vw;height:72vh}.reader-shell{width:100vw}.controls{bottom:10px}.hint{font-size:11px;max-width:90vw;overflow:hidden;text-overflow:ellipsis}.book-topbar{height:52px}.book-stage-wrap{inset:52px 0 0}}
+:root{--wood1:#b9834c;--wood2:#8b562e;--ink:#16110d;--paper:#f7f3e9;--paper2:#efe9dc}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#3b2516;font-family:Inter,Segoe UI,Arial,sans-serif}
+body{position:relative}
+.top{position:fixed;z-index:50;left:0;right:0;top:0;height:54px;display:flex;align-items:center;gap:10px;padding:0 14px;background:rgba(12,12,12,.92);border-bottom:1px solid rgba(255,255,255,.10);backdrop-filter:blur(10px)}
+.top a,.top button{color:#fff;text-decoration:none;border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.08);border-radius:9px;padding:8px 11px;font-size:13px;cursor:pointer}
+.top .spacer{flex:1}.counter{color:#ddd;font-size:12px;min-width:80px;text-align:center}
+.stage{position:fixed;inset:54px 0 0;display:grid;place-items:center;overflow:hidden;background:
+ radial-gradient(ellipse at 16% 22%,rgba(255,245,220,.20),transparent 24%),
+ radial-gradient(ellipse at 83% 68%,rgba(55,28,8,.25),transparent 30%),
+ repeating-linear-gradient(0deg,rgba(92,48,17,.15) 0 2px,transparent 2px 82px),
+ repeating-linear-gradient(90deg,rgba(75,35,12,.12) 0 2px,transparent 2px 118px),
+ linear-gradient(135deg,var(--wood1),var(--wood2));
+}
+.stage:before,.stage:after{content:"";position:absolute;inset:0;pointer-events:none}
+.stage:before{opacity:.35;background:
+ radial-gradient(ellipse at 5% 8%,#36562d 0 3%,transparent 3.2%),radial-gradient(ellipse at 12% 86%,#31532a 0 2.7%,transparent 3%),radial-gradient(ellipse at 92% 15%,#304f27 0 3.3%,transparent 3.6%),radial-gradient(ellipse at 96% 77%,#31562b 0 3.5%,transparent 3.8%)}
+.stage:after{box-shadow:inset 0 0 110px rgba(0,0,0,.28)}
+.reader{position:relative;z-index:2;width:min(1240px,96vw);height:min(800px,84vh);display:grid;place-items:center;filter:drop-shadow(0 34px 34px rgba(0,0,0,.45))}
+.book{position:relative;width:min(1120px,92vw);height:min(746px,76vh);perspective:2400px}
+.spread{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:100%;height:100%;display:flex;gap:0;border-radius:3px;overflow:hidden;box-shadow:0 18px 32px rgba(0,0,0,.32)}
+.side{position:relative;width:50%;height:100%;background:var(--paper);overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+.side.left{border-radius:4px 0 0 4px}.side.right{border-radius:0 4px 4px 0}
+.side:after{content:"";position:absolute;top:0;bottom:0;width:26px;pointer-events:none;opacity:.45}
+.side.left:after{right:0;background:linear-gradient(90deg,transparent,rgba(80,55,30,.10),rgba(255,255,255,.45))}
+.side.right:after{left:0;background:linear-gradient(90deg,rgba(70,45,25,.16),transparent)}
+.paper-shadow{position:absolute;z-index:4;top:0;bottom:0;width:24px;left:calc(50% - 12px);background:linear-gradient(90deg,rgba(0,0,0,.14),rgba(255,255,255,.35),rgba(0,0,0,.10));opacity:.65;pointer-events:none}
+.pdf-frame{position:absolute;inset:0;width:100%;height:100%;border:0;display:block;background:#fff;}
+.pdf-crop{position:absolute;inset:0;overflow:hidden;background:#fff}
+.pdf-crop .pdf-frame{top:-38px;height:calc(100% + 38px)}
+.flipper{position:absolute;z-index:10;top:0;height:100%;width:50%;transform-style:preserve-3d;display:none;backface-visibility:hidden;will-change:transform,box-shadow}
+.flipper.right{left:50%;transform-origin:left center}
+.flipper.left{left:0;transform-origin:right center}
+.flipper .face{position:absolute;inset:0;backface-visibility:hidden;overflow:hidden;background:var(--paper);box-shadow:0 0 18px rgba(0,0,0,.25)}
+.flipper .back{transform:rotateY(180deg)}
+.flipper.right .front{border-radius:0 4px 4px 0}.flipper.left .front{border-radius:4px 0 0 4px}
+.flipper.anim-right{display:block;animation:turnRight 1050ms cubic-bezier(.18,.72,.2,1) forwards}
+.flipper.anim-left{display:block;animation:turnLeft 1050ms cubic-bezier(.18,.72,.2,1) forwards}
+@keyframes turnRight{0%{transform:rotateY(0deg);box-shadow:0 0 0 rgba(0,0,0,0)}36%{box-shadow:-18px 0 30px rgba(0,0,0,.24)}100%{transform:rotateY(-180deg);box-shadow:-4px 0 16px rgba(0,0,0,.05)}}
+@keyframes turnLeft{0%{transform:rotateY(0deg);box-shadow:0 0 0 rgba(0,0,0,0)}36%{box-shadow:18px 0 30px rgba(0,0,0,.24)}100%{transform:rotateY(180deg);box-shadow:4px 0 16px rgba(0,0,0,.05)}}
+.hint,.controls{position:fixed;z-index:30;left:50%;transform:translateX(-50%);color:#fff;background:rgba(0,0,0,.48);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(9px)}
+.hint{bottom:64px;padding:8px 13px;border-radius:999px;font-size:12px;white-space:nowrap}.controls{bottom:12px;display:flex;gap:8px;padding:6px;border-radius:12px}.controls button{border:0;background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:9px 13px;cursor:pointer}
+.loading{position:absolute;z-index:20;inset:0;display:grid;place-items:center;background:rgba(30,19,9,.58);color:#fff;font-size:15px}.loading .box{padding:18px 20px;border-radius:14px;background:rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.12);text-align:center;max-width:440px;line-height:1.5}.loading small{display:block;opacity:.75;margin-top:6px}
+@media(max-width:900px){.book{width:94vw;height:72vh}.hint{max-width:92vw;overflow:hidden;text-overflow:ellipsis}.counter{display:none}}
+@media(max-width:700px){.book{height:min(76vh,690px)}.spread .side.left{display:none}.spread .side.right{width:100%;border-radius:4px}.flipper.right{left:0;width:100%}.flipper.left{display:none}.paper-shadow{display:none}.top a:nth-child(3){display:none}}
 </style>
 </head>
-<body class="book-page">
-  <div class="book-topbar">
-    <a href="/">←</a>
-    <a href="/slayd">Slayd</a>
-    <a href="/site">Site</a>
-    <div class="spacer"></div>
-    <span class="counter" id="counter">0 / 0</span>
-    <button id="soundBtn" type="button">🔊</button>
-    <button id="fullBtn" type="button">⛶</button>
-  </div>
-
-  <main class="book-stage-wrap" id="stageWrap">
-    <div class="wood"></div>
-    <div class="reader-shell">
-      <div id="book-container"><div id="book"></div><div class="loading" id="loading">Kitob yuklanmoqda…</div></div>
+<body>
+<header class="top">
+  <a href="/">←</a><a href="/slayd">Slayd</a><a href="/site">PDF</a>
+  <span class="spacer"></span><span class="counter" id="counter">Yuklanmoqda…</span>
+  <button id="soundBtn">🔊</button><button id="fullBtn">⛶</button>
+</header>
+<main class="stage" id="stage">
+  <div class="reader"><div class="book" id="book">
+    <div class="spread">
+      <div class="side left"><div class="pdf-crop"><iframe id="leftPdf" class="pdf-frame" title="Chap sahifa"></iframe></div></div>
+      <div class="side right"><div class="pdf-crop"><iframe id="rightPdf" class="pdf-frame" title="O‘ng sahifa"></iframe></div></div>
+      <div class="paper-shadow"></div>
     </div>
-    <div class="hint">Sahifaning o‘ng yoki chap tomonini bosing • Sichqoncha bilan torting • ← →</div>
-  </main>
-
-  <div class="controls">
-    <button id="prevBtn">← Oldingi</button>
-    <button id="nextBtn">Keyingi →</button>
-  </div>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs" type="module"></script>
-<script src="https://cdn.jsdelivr.net/npm/page-flip@2.0.7/dist/js/page-flip.browser.js"></script>
-<script type="module">
-  const PDF_URL='/kitob.pdf';
-  const bookEl=document.getElementById('book');
-  const loading=document.getElementById('loading');
-  const counter=document.getElementById('counter');
-  const soundBtn=document.getElementById('soundBtn');
-  const stageWrap=document.getElementById('stageWrap');
-  let soundOn=true;
-  let pageFlip=null;
-  let totalPages=0;
-
-  async function createPage(pdf,pageNum){
-    const p=await pdf.getPage(pageNum);
-    const base=1.55;
-    const viewport=p.getViewport({scale:base});
-    const canvas=document.createElement('canvas');
-    canvas.width=Math.ceil(viewport.width);
-    canvas.height=Math.ceil(viewport.height);
-    const ctx=canvas.getContext('2d',{alpha:false});
-    await p.render({canvasContext:ctx,viewport}).promise;
-    const el=document.createElement('div');
-    el.className='page';
-    el.dataset.page=pageNum;
-    el.appendChild(canvas);
-    return el;
-  }
-
-  // A layered page-rustle sound: paper air/noise + short snap.
-  let audioCtx=null;
-  function paperSound(){
-    if(!soundOn)return;
-    try{
-      audioCtx ||= new (window.AudioContext||window.webkitAudioContext)();
-      if(audioCtx.state==='suspended') audioCtx.resume();
-      const t=audioCtx.currentTime;
-      const noise=audioCtx.createBufferSource();
-      const buffer=audioCtx.createBuffer(1,audioCtx.sampleRate*.22,audioCtx.sampleRate);
-      const data=buffer.getChannelData(0);
-      for(let i=0;i<data.length;i++){
-        const env=Math.max(0,1-i/data.length);
-        data[i]=(Math.random()*2-1)*env*0.22;
-      }
-      noise.buffer=buffer;
-      const filter=audioCtx.createBiquadFilter();filter.type='bandpass';filter.frequency.value=1500;filter.Q.value=.65;
-      const gain=audioCtx.createGain();gain.gain.setValueAtTime(.0001,t);gain.gain.linearRampToValueAtTime(.15,t+.025);gain.gain.exponentialRampToValueAtTime(.0001,t+.2);
-      noise.connect(filter).connect(gain).connect(audioCtx.destination);noise.start(t);
-
-      const click=audioCtx.createOscillator();
-      const clickGain=audioCtx.createGain();
-      click.type='triangle';click.frequency.setValueAtTime(900,t+.02);click.frequency.exponentialRampToValueAtTime(220,t+.14);
-      clickGain.gain.setValueAtTime(.0001,t+.02);clickGain.gain.exponentialRampToValueAtTime(.035,t+.035);clickGain.gain.exponentialRampToValueAtTime(.0001,t+.14);
-      click.connect(clickGain).connect(audioCtx.destination);click.start(t+.02);click.stop(t+.15);
-    }catch{}
-  }
-
-  async function init(){
-    try{
-      // browser import works even though the script tag is module; use dynamic import for compatibility.
-      const pdfjsLib=await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs');
-      pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs';
-      const pdf=await pdfjsLib.getDocument(PDF_URL).promise;
-      totalPages=pdf.numPages;counter.textContent=`1 / ${totalPages}`;
-
-      const pages=[];
-      for(let i=1;i<=totalPages;i++){
-        pages.push(await createPage(pdf,i));
-      }
-      pages.forEach(p=>bookEl.appendChild(p));
-
-      pageFlip=new St.PageFlip(bookEl,{
-        width:540,
-        height:720,
-        size:'stretch',
-        minWidth:260,
-        maxWidth:610,
-        minHeight:360,
-        maxHeight:850,
-        drawShadow:true,
-        maxShadowOpacity:.36,
-        showCover:true,
-        flippingTime:900,
-        usePortrait:true,
-        startPage:0,
-        startZIndex:0,
-        autoSize:true,
-        clickEventForward:true,
-        useMouseEvents:true,
-        mobileScrollSupport:true,
-        swipeDistance:30,
-        showPageCorners:true,
-      });
-      pageFlip.loadFromHTML(document.querySelectorAll('.page'));
-      pageFlip.on('flip',e=>{
-        const current=e.data+1;
-        counter.textContent=`${current} / ${totalPages}`;
-        paperSound();
-      });
-      pageFlip.on('changeState',e=>{
-        document.body.classList.toggle('is-flipping', e.data==='flipping');
-      });
-      loading.remove();
-    }catch(err){
-      console.error(err);
-      loading.textContent='Kitobni yuklashda xatolik yuz berdi. kitob.pdf fayli mavjudligini tekshiring.';
+    <div class="flipper right" id="flipNext"><div class="face front"><div class="pdf-crop"><iframe id="flipFront" class="pdf-frame"></iframe></div></div><div class="face back"><div class="pdf-crop"><iframe id="flipBack" class="pdf-frame"></iframe></div></div></div>
+    <div class="flipper left" id="flipPrev"><div class="face front"><div class="pdf-crop"><iframe id="flipPrevFront" class="pdf-frame"></iframe></div></div><div class="face back"><div class="pdf-crop"><iframe id="flipPrevBack" class="pdf-frame"></iframe></div></div></div>
+    <div class="loading" id="loading"><div class="box">Kitob yuklanmoqda…<small>PDF ochilishi uchun bir necha soniya kerak bo‘lishi mumkin.</small></div></div>
+  </div></div>
+</main>
+<div class="hint">O‘ng yoki chap sahifani bosing • varaqlash uchun torting • ← →</div>
+<div class="controls"><button id="prev">← Oldingi</button><button id="next">Keyingi →</button></div>
+<script>
+const PDF='./kitob.pdf';
+const left=document.getElementById('leftPdf'), right=document.getElementById('rightPdf');
+const fnext=document.getElementById('flipNext'), fprev=document.getElementById('flipPrev');
+const loading=document.getElementById('loading'), counter=document.getElementById('counter');
+const soundBtn=document.getElementById('soundBtn');
+let total=0, spread=1, busy=false, soundOn=true, audio;
+function url(page){return PDF+'#page='+Math.max(1,page)+'&zoom=page-width&toolbar=0&navpanes=0&scrollbar=0'}
+async function probe(){
+  try{
+    const res=await fetch(PDF,{cache:'no-store'});
+    if(!res.ok) throw new Error('kitob.pdf topilmadi.');
+    const buf=await res.arrayBuffer();
+    // Most PDF files keep page dictionaries uncompressed, so counting /Type /Page is a dependable lightweight fallback.
+    const txt=new TextDecoder('latin1').decode(buf);
+    const matches=txt.match(/\/Type\s*\/Page(?:\s|\b)/g)||[];
+    total=matches.length;
+    if(!total){
+      const counts=[...txt.matchAll(/\/Count\s+(\d+)/g)].map(m=>Number(m[1])).filter(Number.isFinite);
+      total=counts.length?Math.max(...counts):1;
     }
+    showSpread(1);
+    loading.style.display='none';
+  }catch(err){
+    loading.innerHTML='<div class="box"><b>Kitobni yuklab bo‘lmadi</b><small>'+err.message+'</small><small>Loyiha papkasida aynan <code>kitob.pdf</code> bo‘lishi kerak.</small></div>';
   }
-  document.getElementById('prevBtn').onclick=()=>pageFlip?.flipPrev();
-  document.getElementById('nextBtn').onclick=()=>pageFlip?.flipNext();
-  soundBtn.onclick=()=>{soundOn=!soundOn;soundBtn.textContent=soundOn?'🔊':'🔇';if(soundOn) paperSound()};
-  document.getElementById('fullBtn').onclick=()=>stageWrap.requestFullscreen?.();
-  window.addEventListener('keydown',e=>{if(e.key==='ArrowRight')pageFlip?.flipNext();if(e.key==='ArrowLeft')pageFlip?.flipPrev()});
-  init();
+}
+function playPaper(){
+  if(!soundOn)return;
+  try{
+    audio ||= new (window.AudioContext||window.webkitAudioContext)();
+    if(audio.state==='suspended')audio.resume();
+    const now=audio.currentTime;
+    const dur=.22, buf=audio.createBuffer(1,audio.sampleRate*dur,audio.sampleRate), d=buf.getChannelData(0);
+    for(let i=0;i<d.length;i++){const t=i/d.length;d[i]=(Math.random()*2-1)*Math.pow(1-t,1.4)}
+    const src=audio.createBufferSource(), filter=audio.createBiquadFilter(), g=audio.createGain();
+    src.buffer=buf;filter.type='bandpass';filter.frequency.value=1700;filter.Q.value=.55;
+    g.gain.setValueAtTime(.0001,now);g.gain.exponentialRampToValueAtTime(.16,now+.018);g.gain.exponentialRampToValueAtTime(.0001,now+dur);
+    src.connect(filter).connect(g).connect(audio.destination);src.start(now);
+    const o=audio.createOscillator(), og=audio.createGain();o.type='triangle';o.frequency.setValueAtTime(340,now+.035);o.frequency.exponentialRampToValueAtTime(150,now+.16);
+    og.gain.setValueAtTime(.0001,now+.035);og.gain.exponentialRampToValueAtTime(.045,now+.055);og.gain.exponentialRampToValueAtTime(.0001,now+.16);
+    o.connect(og).connect(audio.destination);o.start(now+.035);o.stop(now+.17);
+  }catch{}
+}
+function showSpread(n){
+  spread=n; const a=(n-1)*2+1,b=a+1; left.src=url(a); right.src=b<=total?url(b):'about:blank'; counter.textContent=a<=total?(a+'–'+Math.min(b,total)):'1–'+total;
+}
+function animate(dir){
+  if(busy)return;
+  const nextSpread=spread+dir;
+  const maxSpread=Math.ceil(total/2);
+  if(nextSpread<1||nextSpread>maxSpread)return;
+  busy=true;playPaper();
+  if(dir>0){
+    fnext.className='flipper right anim-right';
+    document.getElementById('flipFront').src=right.src;
+    document.getElementById('flipBack').src=url(nextSpread*2);
+  }else{
+    fprev.className='flipper left anim-left';
+    document.getElementById('flipPrevFront').src=left.src;
+    document.getElementById('flipPrevBack').src=url((nextSpread-1)*2+1);
+  }
+  setTimeout(()=>{showSpread(nextSpread);fnext.className='flipper right';fprev.className='flipper left';busy=false},1020);
+}
+document.getElementById('next').onclick=()=>animate(1); document.getElementById('prev').onclick=()=>animate(-1);
+document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')animate(1);if(e.key==='ArrowLeft')animate(-1)});
+soundBtn.onclick=()=>{soundOn=!soundOn;soundBtn.textContent=soundOn?'🔊':'🔇'; if(soundOn)playPaper()};
+document.getElementById('fullBtn').onclick=()=>document.documentElement.requestFullscreen?.();
+let sx=0;
+document.getElementById('book').addEventListener('pointerdown',e=>sx=e.clientX);
+document.getElementById('book').addEventListener('pointerup',e=>{const dx=e.clientX-sx;if(Math.abs(dx)>60)animate(dx<0?1:-1); else if(dx>0)animate(-1); else animate(1)});
+// clickable left/right halves
+window.addEventListener('resize',()=>{});
+probe();
 </script>
 </body>
 </html>
