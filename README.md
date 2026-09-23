@@ -1,28 +1,17 @@
-# Simple Study Exam Site
+# Study Simple Site
 
-Bu loyiha Vercel uchun ataylab juda sodda qilindi. Hech qanday `npm install` talab qilinmaydi.
+Static Vercel/GitHub-friendly site. No npm install required.
 
-## Fayllar
+Put these files next to the HTML files:
 
-Loyiha ildiziga shu 3 ta faylni qo'ying:
+- `slayd.pptx`
+- `site.pdf`
+- `kitob.pdf`
 
-- `slayd.pptx` — `/slayd` sahifasida PowerPoint Online orqali ochiladi.
-- `site.pdf` — `/site` sahifasida brauzer PDF viewer'i orqali ochiladi.
-- `kitob.pdf` — `/kitob` sahifasida 3D varaqlanadigan kitob sifatida ochiladi.
+Routes:
 
-## Muhim
+- `/slayd`
+- `/site`
+- `/kitob`
 
-`site.pdf` ichidagi istalgan matnga `https://SIZNING-DOMENINGIZ.vercel.app/slayd` linkini qo'ysangiz, telefon yoki kompyuterda PDF'dagi link bosilganda `/slayd` ochiladi.
-
-Kitob uchun `kitob.pdf` kerak. `kitob` sahifasi PDF.js CDN'dan foydalanadi, shuning uchun internet kerak.
-
-## Vercel
-
-GitHub'ga barcha fayllarni yuklang va Vercel'da repo'ni import qiling. Build command kerak emas, framework ham kerak emas (Static).
-
-## URL'lar
-
-- `/` — bosh sahifa
-- `/slayd` — PPTX
-- `/site` — PDF
-- `/kitob` — kitob
+The book reader uses PageFlip for a deeper 3D page-turn animation and Web Audio paper-rustle sound. PDF pages are rendered to canvases and displayed as a realistic two-page book.
