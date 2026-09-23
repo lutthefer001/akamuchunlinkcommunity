@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/slayd", "destination": "/slayd.html" },
+    { "source": "/site", "destination": "/site.html" },
+    { "source": "/kitob", "destination": "/kitob.html" }
+  ]
+}

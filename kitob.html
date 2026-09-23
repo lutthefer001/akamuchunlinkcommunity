@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kitob</title><link rel="stylesheet" href="/style.css">
+</head>
+<body class="viewer-page">
+<header class="topbar"><a href="/">← Bosh sahifa</a><nav class="nav"><a class="btn" href="/slayd">Slayd</a><a class="btn" href="/site">Site PDF</a><a class="btn" href="/kitob.pdf" target="_blank">↗ PDF</a></nav></header>
+<div class="book-wrap">
+  <div>
+    <div class="book-stage">
+      <div id="book" class="book">
+        <div id="paper" class="paper cover"><div><div style="font-size:14px;opacity:.7;letter-spacing:.2em">SESSION BOOK</div><h2>Kitob</h2><div style="margin-top:18px;opacity:.7">Boshingiz bilan yoki tugma orqali varaqlang</div></div></div>
+      </div>
+    </div>
+    <div class="controls"><button class="control" id="prev">← Oldingi</button><div class="counter" id="counter">1 / 1</div><button class="control" id="next">Keyingi →</button></div>
+    <div class="help">Sahifaning o‘ng tomonini bossangiz keyingi sahifa ochiladi. Chap tomon — oldingi sahifa. Varaqlaganda “shaq” ovozi chiqadi.</div>
+  </div>
+</div>
+<script type="module">
+import * as pdfjsLib from "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.min.mjs";
+pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.10.38/pdf.worker.min.mjs";
+const paper=document.getElementById('paper'), counter=document.getElementById('counter');
+const prev=document.getElementById('prev'), next=document.getElementById('next');
+let pdf=null,current=1,total=1,busy=false;
+function flipSound(){const C=window.AudioContext||window.webkitAudioContext;if(!C)return;const c=new C(),o=c.createOscillator(),g=c.createGain();o.type='triangle';o.frequency.setValueAtTime(1500,c.currentTime);o.frequency.exponentialRampToValueAtTime(420,c.currentTime+.08);g.gain.setValueAtTime(.0001,c.currentTime);g.gain.exponentialRampToValueAtTime(.08,c.currentTime+.01);g.gain.exponentialRampToValueAtTime(.0001,c.currentTime+.1);o.connect(g).connect(c.destination);o.start();o.stop(c.currentTime+.11)}
+async function drawPage(n){
+  if(!pdf)return;
+  const p=await pdf.getPage(n); const vp=p.getViewport({scale:1.35});
+  const c=document.createElement('canvas'); c.width=vp.width;c.height=vp.height;c.style.width='100%';c.style.height='100%';c.style.objectFit='contain';
+  const wrap=document.createElement('div');wrap.style.width='100%';wrap.style.height='100%';wrap.style.background='#fff';wrap.style.display='grid';wrap.style.placeItems='center';wrap.appendChild(c); paper.replaceChildren(wrap); paper.classList.remove('cover'); await p.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+  counter.textContent=`${n} / ${total}`;
+}
+async function load(){try{pdf=await pdfjsLib.getDocument('/kitob.pdf').promise;total=pdf.numPages;current=1;await drawPage(1)}catch(e){counter.textContent='Kitob fayli yo‘q';}}
+async function go(delta){if(busy)return; const target=current+delta;if(target<1||target>total)return;busy=true;flipSound();paper.style.transition='transform .78s cubic-bezier(.2,.74,.15,1)';paper.style.transform=delta>0?'rotateY(-180deg)':'rotateY(0deg)';setTimeout(async()=>{current=target;await drawPage(current);paper.style.transition='none';paper.style.transform='rotateY(0deg)';requestAnimationFrame(()=>{paper.style.transition='transform .78s cubic-bezier(.2,.74,.15,1)'});busy=false},delta>0?780:50)}
+next.onclick=()=>go(1);prev.onclick=()=>go(-1);document.getElementById('book').onclick=e=>{const r=e.currentTarget.getBoundingClientRect();go(e.clientX-r.left>r.width/2?1:-1)};window.onkeydown=e=>{if(e.key==='ArrowRight')go(1);if(e.key==='ArrowLeft')go(-1)};
+load();
+</script></body></html>
